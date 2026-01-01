@@ -1,0 +1,60 @@
+:{
+ Flux example program demonstrating language features.
+
+ Demonstrates: integers, doubles, strings, arithmetic,
+ control flow, functions (typed parameters), closures,
+ string indexing/slicing, casts, builtins (`print`, `input`, `len`),
+ and comment styles.
+:}
+
+:? Single-line comment using Java-style
+let name = input("Enter your name: ");
+print("Hello, " + name);
+
+:{
+ Multi-line comment demonstrating that block comments are supported.
+ This example uses the Flux block comment form.
+:}
+
+:{
+ Add two numbers. Demonstrates typed parameters and return.
+ @param a Int
+ @param b double
+:}
+fun add(a : Int, b : double) {
+	return a + b;
+}
+
+let i = 0;
+while (i < 3) {
+	print("i = " + i);
+	i = i + 1;
+}
+
+let s = "Hello, Flux!";
+print("len(s) = " + len(s));
+print("s[0] = " + s[0]);
+print("s[1:5] = " + s[1:5]);
+
+:? show integer + double promotion
+let v = add(2, 3.5);
+print("add(2, 3.5) = " + v);
+
+:? Closure example: make a function that returns a function
+fun makeAdder(a : Int) {
+	fun inner(b : Int) {
+		return a + b;
+	}
+	return inner;
+}
+
+let inc = makeAdder(1);
+let six = inc(5);
+print("inc(5) = " + six);
+
+:? cast example (double) applied to int
+let n = 5;
+let d = (double) n / 2;
+print("5 / 2 = " + d);
+
+:? End of example

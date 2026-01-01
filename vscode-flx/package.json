@@ -1,0 +1,32 @@
+{
+  "name": "vscode-flx",
+  "displayName": "Flux Language (flx) Syntax",
+  "publisher": "you",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.50.0" },
+  "description": "Syntax highlighting for the Flux (.flx) language",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/you/flux-compiler"
+  },
+  "bugs": { "url": "https://github.com/you/flux-compiler/issues" },
+  "homepage": "https://github.com/you/flux-compiler",
+  "categories": [ "Programming Languages" ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "flx",
+        "aliases": [ "Flux", "flx" ],
+        "extensions": [ ".flx" ],
+        "configuration": "language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "flx",
+        "scopeName": "source.flx",
+        "path": "./syntaxes/flx.tmLanguage.json"
+      }
+    ]
+  }
+}
