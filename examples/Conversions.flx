@@ -1,0 +1,42 @@
+:? Conversion constants
+let foot_to_meter = 0.3048;
+let inch_to_cm = 2.54;
+let kg_to_pound = 2.20462;
+
+:? Conversion functions
+fun feet_to_meters(f) { return f * foot_to_meter; }
+fun meters_to_feet(m) { return m / foot_to_meter; }
+
+fun inches_to_cm(i) { return i * inch_to_cm; }
+fun cm_to_inches(c) { return c / inch_to_cm; }
+
+fun kg_to_pounds(kg) { return kg * kg_to_pound; }
+fun pounds_to_kg(lb) { return lb / kg_to_pound; }
+
+fun celsius_to_fahrenheit(c) { return c * 9.0/5.0 + 32.0; }
+fun fahrenheit_to_celsius(f) { return (f - 32.0) * 5.0/9.0; }
+
+:? Main program
+let running = true;
+
+while (running) {
+    print("Choose conversion: F2M, M2F, I2CM, CM2I, KG2LB, LB2KG, C2F, F2C, or EXIT:");
+    let choice = input("> ");
+
+    if (choice == "EXIT") {
+        running = false;
+    } else {
+        let value = input("Enter value: ");
+        let num = (Double) value;
+
+        if (choice == "F2M") { print("Result: " + feet_to_meters(num)); }
+        else if (choice == "M2F") { print("Result: " + meters_to_feet(num)); }
+        else if (choice == "I2CM") { print("Result: " + inches_to_cm(num)); }
+        else if (choice == "CM2I") { print("Result: " + cm_to_inches(num)); }
+        else if (choice == "KG2LB") { print("Result: " + kg_to_pounds(num)); }
+        else if (choice == "LB2KG") { print("Result: " + pounds_to_kg(num)); }
+        else if (choice == "C2F") { print("Result: " + celsius_to_fahrenheit(num)); }
+        else if (choice == "F2C") { print("Result: " + fahrenheit_to_celsius(num)); }
+        else { print("Unknown choice!"); }
+    }
+}
