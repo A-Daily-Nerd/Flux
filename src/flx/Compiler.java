@@ -32,8 +32,7 @@ public class Compiler {
             Lexer lexer = new Lexer(source);
             List<Token> tokens = lexer.tokenize();
 
-            // debug: print tokens
-            for (Token t : tokens) System.err.println(t);
+            // tokens are produced by the lexer (debug printing removed)
             Parser parser = new Parser(tokens);
             List<Stmt> program = parser.parse();
             // run static type checking before execution

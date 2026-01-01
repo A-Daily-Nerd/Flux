@@ -28,48 +28,48 @@ public class Codegen {
         StringBuilder sb = new StringBuilder();
         sb.append("public class FluxProgram {\n");
         // helper methods
-        sb.append("  private static Object add(Object a, Object b) {\n");
+        sb.append("  private static Object __flx_add(Object a, Object b) {\n");
         sb.append("    if (a instanceof String || b instanceof String) return String.valueOf(a) + String.valueOf(b);\n");
         sb.append("    if (a instanceof Double || b instanceof Double) return ((Number)a).doubleValue() + ((Number)b).doubleValue();\n");
         sb.append("    return ((Number)a).intValue() + ((Number)b).intValue();\n");
         sb.append("  }\n");
 
-        sb.append("  private static Object sub(Object a, Object b) {\n");
+        sb.append("  private static Object __flx_sub(Object a, Object b) {\n");
         sb.append("    if (a instanceof Double || b instanceof Double) return ((Number)a).doubleValue() - ((Number)b).doubleValue();\n");
         sb.append("    return ((Number)a).intValue() - ((Number)b).intValue();\n");
         sb.append("  }\n");
 
-        sb.append("  private static Object mul(Object a, Object b) {\n");
+        sb.append("  private static Object __flx_mul(Object a, Object b) {\n");
         sb.append("    if (a instanceof Double || b instanceof Double) return ((Number)a).doubleValue() * ((Number)b).doubleValue();\n");
         sb.append("    return ((Number)a).intValue() * ((Number)b).intValue();\n");
         sb.append("  }\n");
 
-        sb.append("  private static Object div(Object a, Object b) {\n");
+        sb.append("  private static Object __flx_div(Object a, Object b) {\n");
         sb.append("    if (a instanceof Double || b instanceof Double) return ((Number)a).doubleValue() / ((Number)b).doubleValue();\n");
         sb.append("    return ((Number)a).intValue() / ((Number)b).intValue();\n");
         sb.append("  }\n");
 
-        sb.append("  private static boolean gt(Object a, Object b) {\n");
+        sb.append("  private static boolean __flx_gt(Object a, Object b) {\n");
         sb.append("    if (a instanceof Number && b instanceof Number) return ((Number)a).doubleValue() > ((Number)b).doubleValue();\n");
         sb.append("    return String.valueOf(a).compareTo(String.valueOf(b)) > 0;\n");
         sb.append("  }\n");
 
-        sb.append("  private static boolean lt(Object a, Object b) {\n");
+        sb.append("  private static boolean __flx_lt(Object a, Object b) {\n");
         sb.append("    if (a instanceof Number && b instanceof Number) return ((Number)a).doubleValue() < ((Number)b).doubleValue();\n");
         sb.append("    return String.valueOf(a).compareTo(String.valueOf(b)) < 0;\n");
         sb.append("  }\n");
 
-        sb.append("  private static boolean eq(Object a, Object b) {\n");
+        sb.append("  private static boolean __flx_eq(Object a, Object b) {\n");
         sb.append("    if (a == null) return b == null;\n");
         sb.append("    return a.equals(b);\n");
         sb.append("  }\n");
-        sb.append("  private static String input(Object prompt) {\n");
+        sb.append("  private static String __flx_input(Object prompt) {\n");
         sb.append("    if (prompt != null) System.out.print(String.valueOf(prompt));\n");
         sb.append("    try { java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(System.in)); return br.readLine(); } catch (Exception e) { return null; }\n");
         sb.append("  }\n");
 
-        sb.append("  private static String idx(Object s, Object i) { String str = (String)s; int idx = ((Number)i).intValue(); if (idx < 0) idx = str.length() + idx; return String.valueOf(str.charAt(idx)); }\n");
-        sb.append("  private static String slc(Object s, Object a, Object b) { String str = (String)s; int len = str.length(); int si = a==null?0:((Number)a).intValue(); int ei = b==null?len:((Number)b).intValue(); if (si<0) si = len+si; if (ei<0) ei=len+ei; if (si<0) si=0; if (ei>len) ei=len; if (ei<si) return \"\"; return str.substring(si, ei); }\n");
+        sb.append("  private static String __flx_idx(Object s, Object i) { String str = (String)s; int idx = ((Number)i).intValue(); if (idx < 0) idx = str.length() + idx; return String.valueOf(str.charAt(idx)); }\n");
+        sb.append("  private static String __flx_slc(Object s, Object a, Object b) { String str = (String)s; int len = str.length(); int si = a==null?0:((Number)a).intValue(); int ei = b==null?len:((Number)b).intValue(); if (si<0) si = len+si; if (ei<0) ei=len+ei; if (si<0) si=0; if (ei>len) ei=len; if (ei<si) return \"\"; return str.substring(si, ei); }\n");
 
         // functions
         for (Stmt s : program) {
@@ -162,22 +162,27 @@ public class Codegen {
         if (e instanceof Expr.Variable v) return v.name();
         if (e instanceof Expr.Binary b) {
             switch (b.op().type()) {
-                case PLUS: return "add(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
-                case MINUS: return "sub(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
-                case STAR: return "mul(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
-                case SLASH: return "div(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
-                case GREATER: return "gt(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
-                case LESS: return "lt(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
-                case EQUAL_EQUAL: return "eq(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case PLUS: return "__flx_add(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case MINUS: return "__flx_sub(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case STAR: return "__flx_mul(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case SLASH: return "__flx_div(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case GREATER: return "__flx_gt(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case LESS: return "__flx_lt(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
+                case EQUAL_EQUAL: return "__flx_eq(" + generateExpr(b.left()) + ", " + generateExpr(b.right()) + ")";
                 default: return "null";
             }
         }
         if (e instanceof Expr.Unary u) {
-            if (u.op().type() == TokenType.MINUS) return "sub(Integer.valueOf(0), " + generateExpr(u.right()) + ")";
+            if (u.op().type() == TokenType.MINUS) return "__flx_sub(Integer.valueOf(0), " + generateExpr(u.right()) + ")";
         }
         if (e instanceof Expr.Call c) {
             StringBuilder sb = new StringBuilder();
-            sb.append(c.callee() instanceof Expr.Variable v ? v.name() : generateExpr(c.callee())).append("(");
+            // If calling the builtin `input`, route to the internal helper to avoid name collisions
+            if (c.callee() instanceof Expr.Variable v && v.name().equals("input")) {
+                sb.append("__flx_input(");
+            } else {
+                sb.append(c.callee() instanceof Expr.Variable v ? v.name() : generateExpr(c.callee())).append("(");
+            }
             for (int i = 0; i < c.args().size(); i++) {
                 if (i > 0) sb.append(", ");
                 sb.append(generateExpr(c.args().get(i)));
@@ -185,8 +190,8 @@ public class Codegen {
             sb.append(")");
             return sb.toString();
         }
-        if (e instanceof Expr.Index idx) return "idx(" + generateExpr(idx.target()) + ", " + generateExpr(idx.index()) + ")";
-        if (e instanceof Expr.Slice sl) return "slc(" + generateExpr(sl.target()) + ", " + (sl.start()==null?"null":generateExpr(sl.start())) + ", " + (sl.end()==null?"null":generateExpr(sl.end())) + ")";
+        if (e instanceof Expr.Index idx) return "__flx_idx(" + generateExpr(idx.target()) + ", " + generateExpr(idx.index()) + ")";
+        if (e instanceof Expr.Slice sl) return "__flx_slc(" + generateExpr(sl.target()) + ", " + (sl.start()==null?"null":generateExpr(sl.start())) + ", " + (sl.end()==null?"null":generateExpr(sl.end())) + ")";
         if (e instanceof Expr.Cast c) {
             String t = c.typeName().toLowerCase();
             switch (t) {
