@@ -91,4 +91,3 @@ print s[1:4]  # "ell"
 - Type checking infers and enforces primitive types; casts are lowered to runtime helpers in the Java codegen.
 - Code generation emits helper methods named `__flx_*` (e.g., `__flx_cast_int`) for runtime conversions.
 
-If you want, I can also generate a compact BNF or a printable cheatsheet PDF from this markdown. Which format would you prefer next?
