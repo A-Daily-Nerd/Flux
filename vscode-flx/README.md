@@ -21,7 +21,7 @@ Language highlights & notes
 - File extension: `.flx` — the extension activates the `flx` language for these files.
 - Comments: single-line `:? ...` and block `:{ ... :}` are recognized by the language configuration and highlighted/ignored by the lexer.
 - Functions: `fun name(params) { ... }` with optional typed parameters `name : Type`.
-- Builtins: `print(...)`, `input(prompt)` (prints prompt and returns a string), `len(...)`, and other small helpers supported by the runtime.
+- Builtins: `print(...)`, `input(prompt)` (prints prompt and returns a string)
 - Strings: indexing `s[i]` and slicing `s[a:b]` are valid expressions in Flux and highlighted by the grammar.
 
 Extending the extension
