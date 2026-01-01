@@ -24,6 +24,11 @@ public class Codegen {
         if (rc2 != 0) throw new RuntimeException("program exited with " + rc2);
     }
 
+    // Expose the generated Java source for inspection without compiling.
+    public static String generateSource(List<Stmt> program) {
+        return generate(program);
+    }
+
     private static String generate(List<Stmt> program) {
         StringBuilder sb = new StringBuilder();
         sb.append("public class FluxProgram {\n");
@@ -70,6 +75,47 @@ public class Codegen {
 
         sb.append("  private static String __flx_idx(Object s, Object i) { String str = (String)s; int idx = ((Number)i).intValue(); if (idx < 0) idx = str.length() + idx; return String.valueOf(str.charAt(idx)); }\n");
         sb.append("  private static String __flx_slc(Object s, Object a, Object b) { String str = (String)s; int len = str.length(); int si = a==null?0:((Number)a).intValue(); int ei = b==null?len:((Number)b).intValue(); if (si<0) si = len+si; if (ei<0) ei=len+ei; if (si<0) si=0; if (ei>len) ei=len; if (ei<si) return \"\"; return str.substring(si, ei); }\n");
+
+        // cast helpers: handle Numbers and Strings (from input) safely
+        sb.append("  private static Object __flx_cast_int(Object v) {\n");
+        sb.append("    if (v == null) throw new RuntimeException(\"Cannot cast null to int\");\n");
+        sb.append("    if (v instanceof Number) return Integer.valueOf(((Number)v).intValue());\n");
+        sb.append("    if (v instanceof String) {\n");
+        sb.append("      String s = ((String)v).trim();\n");
+        sb.append("      if (s.isEmpty()) throw new RuntimeException(\"Cannot cast empty string to int\");\n");
+        sb.append("      try { return Integer.valueOf(Integer.parseInt(s)); }\n");
+        sb.append("      catch (NumberFormatException e) {\n");
+        sb.append("        try { return Integer.valueOf((int)Double.parseDouble(s)); }\n");
+        sb.append("        catch (NumberFormatException e2) { throw new RuntimeException(String.format(\"Cannot cast to int: '%s'\", s)); }\n");
+        sb.append("      }\n");
+        sb.append("    }\n");
+        sb.append("    throw new RuntimeException(\"Cannot cast to int: \" + v);\n");
+        sb.append("  }\n");
+
+        sb.append("  private static Object __flx_cast_double(Object v) {\n");
+        sb.append("    if (v == null) throw new RuntimeException(\"Cannot cast null to double\");\n");
+        sb.append("    if (v instanceof Number) return Double.valueOf(((Number)v).doubleValue());\n");
+        sb.append("    if (v instanceof String) {\n");
+        sb.append("      String s = ((String)v).trim();\n");
+        sb.append("      if (s.isEmpty()) throw new RuntimeException(\"Cannot cast empty string to double\");\n");
+        sb.append("      try { return Double.valueOf(Double.parseDouble(s)); }\n");
+        sb.append("      catch (NumberFormatException e) { throw new RuntimeException(String.format(\"Cannot cast to double: '%s'\", s)); }\n");
+        sb.append("    }\n");
+        sb.append("    throw new RuntimeException(\"Cannot cast to double: \" + v);\n");
+        sb.append("  }\n");
+
+        sb.append("  private static Object __flx_cast_bool(Object v) {\n");
+        sb.append("    if (v == null) throw new RuntimeException(\"Cannot cast null to bool\");\n");
+        sb.append("    if (v instanceof Boolean) return v;\n");
+        sb.append("    if (v instanceof Number) return ((Number)v).doubleValue() != 0.0;\n");
+        sb.append("    if (v instanceof String) {\n");
+        sb.append("      String s = ((String)v).trim().toLowerCase();\n");
+        sb.append("      if (s.equals(\"true\") || s.equals(\"1\")) return true;\n");
+        sb.append("      if (s.equals(\"false\") || s.equals(\"0\")) return false;\n");
+        sb.append("      throw new RuntimeException(String.format(\"Cannot cast to bool: '%s'\", s));\n");
+        sb.append("    }\n");
+        sb.append("    throw new RuntimeException(\"Cannot cast to bool: \" + v);\n");
+        sb.append("  }\n");
 
         // functions
         for (Stmt s : program) {
@@ -195,10 +241,10 @@ public class Codegen {
         if (e instanceof Expr.Cast c) {
             String t = c.typeName().toLowerCase();
             switch (t) {
-                case "int": return "Integer.valueOf(((Number)" + generateExpr(c.expr()) + ").intValue())";
-                case "double": return "Double.valueOf(((Number)" + generateExpr(c.expr()) + ").doubleValue())";
+                case "int": return "__flx_cast_int(" + generateExpr(c.expr()) + ")";
+                case "double": return "__flx_cast_double(" + generateExpr(c.expr()) + ")";
                 case "str": return "String.valueOf(" + generateExpr(c.expr()) + ")";
-                case "bool": return "Boolean.valueOf(" + generateExpr(c.expr()) + ")";
+                case "bool": return "__flx_cast_bool(" + generateExpr(c.expr()) + ")";
                 default: return generateExpr(c.expr());
             }
         }

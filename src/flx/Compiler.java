@@ -6,15 +6,55 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class Compiler {
+    private static final String VERSION = "0.1";
 
     public static void main(String[] args) {
 
-        if (args.length != 1) {
-            System.err.println("Usage: java flx.Compiler <file.flx>");
-            System.exit(1);
+        if (args.length < 1) {
+            printUsageAndExit();
         }
 
         Path filePath = Path.of(args[0]);
+        boolean emitJava = false;
+        Path emitOutDir = null;
+        boolean noRun = false;
+        boolean noTypecheck = false;
+        boolean quiet = false;
+
+        for (int i = 1; i < args.length; i++) {
+            String a = args[i];
+            switch (a) {
+                case "--emit-java":
+                    emitJava = true;
+                    break;
+                case "--emit-java-out":
+                    if (i + 1 >= args.length) {
+                        System.err.println("--emit-java-out requires a directory argument");
+                        System.exit(1);
+                    }
+                    emitOutDir = Path.of(args[++i]);
+                    emitJava = true;
+                    break;
+                case "--no-run":
+                    noRun = true;
+                    break;
+                case "--no-typecheck":
+                    noTypecheck = true;
+                    break;
+                case "--quiet":
+                    quiet = true;
+                    break;
+                case "--help":
+                    printUsageAndExit();
+                    break;
+                case "--version":
+                    System.out.println("Flux Compiler " + VERSION);
+                    System.exit(0);
+                default:
+                    System.err.println("Unknown option: " + a);
+                    printUsageAndExit();
+            }
+        }
 
         if (!Files.exists(filePath)) {
             System.err.println("File not found: " + filePath);
@@ -36,8 +76,37 @@ public class Compiler {
             Parser parser = new Parser(tokens);
             List<Stmt> program = parser.parse();
             // run static type checking before execution
-            TypeChecker checker = new TypeChecker();
-            checker.check(program);
+            if (!noTypecheck) {
+                TypeChecker checker = new TypeChecker();
+                checker.check(program);
+            }
+
+            if (emitJava) {
+                try {
+                    String src = Codegen.generateSource(program);
+                    String name = filePath.getFileName().toString();
+                    String base = name.endsWith(".flx") ? name.substring(0, name.length() - 4) : name;
+                    Path out;
+                    if (emitOutDir != null) {
+                        out = emitOutDir.resolve(base + "-COMPILED.java");
+                    } else {
+                        Path parent = filePath.getParent();
+                        out = (parent == null) ? Path.of(base + "-COMPILED.java") : parent.resolve(base + "-COMPILED.java");
+                    }
+                    Files.createDirectories(out.getParent());
+                    Files.writeString(out, src);
+                    if (!quiet) System.out.println("Wrote " + out.toString());
+                    System.exit(0);
+                } catch (IOException e) {
+                    System.err.println("Failed to write generated Java: " + e.getMessage());
+                    System.exit(1);
+                }
+            }
+
+            if (noRun) {
+                if (!quiet) System.out.println("No-run flag set; exiting after typecheck.");
+                System.exit(0);
+            }
 
             // compile to Java and run
             try {
@@ -57,5 +126,18 @@ public class Compiler {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    private static void printUsageAndExit() {
+        System.err.println("Usage: java flx.Compiler <file.flx> [options]");
+        System.err.println("Options:");
+        System.err.println("  --emit-java             Write generated Java next to the input file and exit");
+        System.err.println("  --emit-java-out <dir>   Write generated Java into <dir> and exit");
+        System.err.println("  --no-run                Do not compile or run generated Java (exit after typecheck)");
+        System.err.println("  --no-typecheck          Skip static type checking");
+        System.err.println("  --quiet                 Suppress informative output");
+        System.err.println("  --help                  Show this help and exit");
+        System.err.println("  --version               Show compiler version and exit");
+        System.exit(1);
     }
 }

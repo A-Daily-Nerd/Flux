@@ -34,25 +34,73 @@ public class FluxProgram {
   }
   private static String __flx_idx(Object s, Object i) { String str = (String)s; int idx = ((Number)i).intValue(); if (idx < 0) idx = str.length() + idx; return String.valueOf(str.charAt(idx)); }
   private static String __flx_slc(Object s, Object a, Object b) { String str = (String)s; int len = str.length(); int si = a==null?0:((Number)a).intValue(); int ei = b==null?len:((Number)b).intValue(); if (si<0) si = len+si; if (ei<0) ei=len+ei; if (si<0) si=0; if (ei>len) ei=len; if (ei<si) return ""; return str.substring(si, ei); }
-  private static Object add(Object a, Object b) {
-    return __flx_add(a, b);
+  private static Object __flx_cast_int(Object v) {
+    if (v == null) throw new RuntimeException("Cannot cast null to int");
+    if (v instanceof Number) return Integer.valueOf(((Number)v).intValue());
+    if (v instanceof String) {
+      String s = ((String)v).trim();
+      if (s.isEmpty()) throw new RuntimeException("Cannot cast empty string to int");
+      try { return Integer.valueOf(Integer.parseInt(s)); }
+      catch (NumberFormatException e) {
+        try { return Integer.valueOf((int)Double.parseDouble(s)); }
+        catch (NumberFormatException e2) { throw new RuntimeException(String.format("Cannot cast to int: '%s'", s)); }
+      }
+    }
+    throw new RuntimeException("Cannot cast to int: " + v);
+  }
+  private static Object __flx_cast_double(Object v) {
+    if (v == null) throw new RuntimeException("Cannot cast null to double");
+    if (v instanceof Number) return Double.valueOf(((Number)v).doubleValue());
+    if (v instanceof String) {
+      String s = ((String)v).trim();
+      if (s.isEmpty()) throw new RuntimeException("Cannot cast empty string to double");
+      try { return Double.valueOf(Double.parseDouble(s)); }
+      catch (NumberFormatException e) { throw new RuntimeException(String.format("Cannot cast to double: '%s'", s)); }
+    }
+    throw new RuntimeException("Cannot cast to double: " + v);
+  }
+  private static Object __flx_cast_bool(Object v) {
+    if (v == null) throw new RuntimeException("Cannot cast null to bool");
+    if (v instanceof Boolean) return v;
+    if (v instanceof Number) return ((Number)v).doubleValue() != 0.0;
+    if (v instanceof String) {
+      String s = ((String)v).trim().toLowerCase();
+      if (s.equals("true") || s.equals("1")) return true;
+      if (s.equals("false") || s.equals("0")) return false;
+      throw new RuntimeException(String.format("Cannot cast to bool: '%s'", s));
+    }
+    throw new RuntimeException("Cannot cast to bool: " + v);
   }
   public static void main(String[] args) {
-  Object name = __flx_input("Enter your name: ");
-  System.out.println(__flx_add("Hello, ", name));
-  Object i = Integer.valueOf(0);
-  while ((Boolean) (__flx_lt(i, Integer.valueOf(3))) )
+  System.out.println("Welcome to my calculator!");
+  Object numberOne = __flx_input("Whats the first number?: ");
+  Object numberTwo = __flx_input("Whats the second number?: ");
+  numberOne = __flx_cast_int(numberOne);
+  numberTwo = __flx_cast_int(numberTwo);
+  Object Op = __flx_input("What operation would you like to do? (1: add, 2: sub, 3: mult, 4:div): ");
+  Op = __flx_cast_int(Op);
+  if ((Boolean) (__flx_eq(Op, Integer.valueOf(1))) )
   {
-    System.out.println(__flx_add("i = ", i));
-    i = __flx_add(i, Integer.valueOf(1));
+    System.out.println(__flx_add(numberOne, numberTwo));
   }
-  Object s = "Hello, Flux!";
-  System.out.println(__flx_add("s[0] = ", __flx_idx(s, Integer.valueOf(0))));
-  System.out.println(__flx_add("s[1:5] = ", __flx_slc(s, Integer.valueOf(1), Integer.valueOf(5))));
-  Object v = add(Integer.valueOf(2), Double.valueOf(3.5));
-  System.out.println(__flx_add("add(2, 3.5) = ", v));
-  Object n = Integer.valueOf(5);
-  Object d = __flx_div(Double.valueOf(((Number)n).doubleValue()), Integer.valueOf(2));
-  System.out.println(__flx_add("5 / 2 = ", d));
+  else
+  if ((Boolean) (__flx_eq(Op, Integer.valueOf(2))) )
+  {
+    System.out.println(__flx_sub(numberOne, numberTwo));
+  }
+  else
+  if ((Boolean) (__flx_eq(Op, Integer.valueOf(3))) )
+  {
+    System.out.println(__flx_mul(numberOne, numberTwo));
+  }
+  else
+  if ((Boolean) (__flx_eq(Op, Integer.valueOf(4))) )
+  {
+    System.out.println(__flx_div(__flx_mul(numberOne, Double.valueOf(1.0)), numberTwo));
+  }
+  else
+  {
+    System.out.println("Invalid Operation");
+  }
   }
 }

@@ -62,27 +62,55 @@ public class Interpreter {
     private Object applyCast(Expr.Cast c) {
         Object val = eval(c.expr());
         String t = c.typeName().toLowerCase();
-        return switch (t) {
-            case "int", "integer" -> {
-                if (val instanceof Integer) yield val;
-                if (val instanceof Double) yield ((Double) val).intValue();
-                if (val instanceof String) yield Integer.parseInt((String) val);
+        switch (t) {
+            case "int", "integer": {
+                if (val instanceof Integer) return val;
+                if (val instanceof Double) return ((Double) val).intValue();
+                if (val instanceof String) {
+                    String s = ((String) val).trim();
+                    if (s.isEmpty()) throw new RuntimeException("Cannot cast empty string to int");
+                    try {
+                        return Integer.parseInt(s);
+                    } catch (NumberFormatException ex) {
+                        try {
+                            return (int) Double.parseDouble(s);
+                        } catch (NumberFormatException ex2) {
+                            throw new RuntimeException("Cannot cast to int: '" + s + "'");
+                        }
+                    }
+                }
                 throw new RuntimeException("Cannot cast to int: " + val);
             }
-            case "double", "float" -> {
-                if (val instanceof Double) yield val;
-                if (val instanceof Integer) yield ((Integer) val).doubleValue();
-                if (val instanceof String) yield Double.parseDouble((String) val);
+            case "double", "float": {
+                if (val instanceof Double) return val;
+                if (val instanceof Integer) return ((Integer) val).doubleValue();
+                if (val instanceof String) {
+                    String s = ((String) val).trim();
+                    if (s.isEmpty()) throw new RuntimeException("Cannot cast empty string to double");
+                    try {
+                        return Double.parseDouble(s);
+                    } catch (NumberFormatException ex) {
+                        throw new RuntimeException("Cannot cast to double: '" + s + "'");
+                    }
+                }
                 throw new RuntimeException("Cannot cast to double: " + val);
             }
-            case "str", "string" -> String.valueOf(val);
-            case "bool", "boolean" -> {
-                if (val instanceof Boolean) yield val;
-                if (val instanceof String) yield Boolean.parseBoolean((String) val);
+            case "str", "string":
+                return String.valueOf(val);
+            case "bool", "boolean": {
+                if (val instanceof Boolean) return val;
+                if (val instanceof String) {
+                    String s = ((String) val).trim().toLowerCase();
+                    if (s.equals("true") || s.equals("1")) return true;
+                    if (s.equals("false") || s.equals("0")) return false;
+                    throw new RuntimeException("Cannot cast to bool: '" + s + "'");
+                }
+                if (val instanceof Number) return ((Number) val).doubleValue() != 0.0;
                 throw new RuntimeException("Cannot cast to bool: " + val);
             }
-            default -> throw new RuntimeException("Unknown cast type: " + t);
-        };
+            default:
+                throw new RuntimeException("Unknown cast type: " + t);
+        }
     }
 
     private Object applyIndex(Expr.Index i) {
