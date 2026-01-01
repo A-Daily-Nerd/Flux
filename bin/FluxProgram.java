@@ -71,36 +71,91 @@ public class FluxProgram {
     }
     throw new RuntimeException("Cannot cast to bool: " + v);
   }
+  private static Object foot_to_meter = Double.valueOf(0.3048);
+  private static Object inch_to_cm = Double.valueOf(2.54);
+  private static Object kg_to_pound = Double.valueOf(2.20462);
+  private static Object running = Boolean.TRUE;
+  private static Object feet_to_meters(Object f) {
+    return __flx_mul(f, foot_to_meter);
+  }
+  private static Object meters_to_feet(Object m) {
+    return __flx_div(m, foot_to_meter);
+  }
+  private static Object inches_to_cm(Object i) {
+    return __flx_mul(i, inch_to_cm);
+  }
+  private static Object cm_to_inches(Object c) {
+    return __flx_div(c, inch_to_cm);
+  }
+  private static Object kg_to_pounds(Object kg) {
+    return __flx_mul(kg, kg_to_pound);
+  }
+  private static Object pounds_to_kg(Object lb) {
+    return __flx_div(lb, kg_to_pound);
+  }
+  private static Object celsius_to_fahrenheit(Object c) {
+    return __flx_add(__flx_div(__flx_mul(c, Double.valueOf(9.0)), Double.valueOf(5.0)), Double.valueOf(32.0));
+  }
+  private static Object fahrenheit_to_celsius(Object f) {
+    return __flx_div(__flx_mul(__flx_sub(f, Double.valueOf(32.0)), Double.valueOf(5.0)), Double.valueOf(9.0));
+  }
   public static void main(String[] args) {
-  System.out.println("Welcome to my calculator!");
-  Object numberOne = __flx_input("Whats the first number?: ");
-  Object numberTwo = __flx_input("Whats the second number?: ");
-  numberOne = __flx_cast_int(numberOne);
-  numberTwo = __flx_cast_int(numberTwo);
-  Object Op = __flx_input("What operation would you like to do? (1: add, 2: sub, 3: mult, 4:div): ");
-  Op = __flx_cast_int(Op);
-  if ((Boolean) (__flx_eq(Op, Integer.valueOf(1))) )
+  while ((Boolean) (running) )
   {
-    System.out.println(__flx_add(numberOne, numberTwo));
-  }
-  else
-  if ((Boolean) (__flx_eq(Op, Integer.valueOf(2))) )
-  {
-    System.out.println(__flx_sub(numberOne, numberTwo));
-  }
-  else
-  if ((Boolean) (__flx_eq(Op, Integer.valueOf(3))) )
-  {
-    System.out.println(__flx_mul(numberOne, numberTwo));
-  }
-  else
-  if ((Boolean) (__flx_eq(Op, Integer.valueOf(4))) )
-  {
-    System.out.println(__flx_div(__flx_mul(numberOne, Double.valueOf(1.0)), numberTwo));
-  }
-  else
-  {
-    System.out.println("Invalid Operation");
+    System.out.println("Choose conversion: F2M, M2F, I2CM, CM2I, KG2LB, LB2KG, C2F, F2C, or EXIT:");
+    Object choice = __flx_input("> ");
+    if ((Boolean) (__flx_eq(choice, "EXIT")) )
+    {
+      running = Boolean.FALSE;
+    }
+    else
+    {
+      Object value = __flx_input("Enter value: ");
+      Object num = __flx_cast_double(value);
+      if ((Boolean) (__flx_eq(choice, "F2M")) )
+      {
+        System.out.println(__flx_add("Result: ", feet_to_meters(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "M2F")) )
+      {
+        System.out.println(__flx_add("Result: ", meters_to_feet(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "I2CM")) )
+      {
+        System.out.println(__flx_add("Result: ", inches_to_cm(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "CM2I")) )
+      {
+        System.out.println(__flx_add("Result: ", cm_to_inches(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "KG2LB")) )
+      {
+        System.out.println(__flx_add("Result: ", kg_to_pounds(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "LB2KG")) )
+      {
+        System.out.println(__flx_add("Result: ", pounds_to_kg(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "C2F")) )
+      {
+        System.out.println(__flx_add("Result: ", celsius_to_fahrenheit(num)));
+      }
+      else
+      if ((Boolean) (__flx_eq(choice, "F2C")) )
+      {
+        System.out.println(__flx_add("Result: ", fahrenheit_to_celsius(num)));
+      }
+      else
+      {
+        System.out.println("Unknown choice!");
+      }
+    }
   }
   }
 }

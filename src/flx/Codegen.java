@@ -117,6 +117,13 @@ public class Codegen {
         sb.append("    throw new RuntimeException(\"Cannot cast to bool: \" + v);\n");
         sb.append("  }\n");
 
+        // top-level variable declarations -> emit as class-level static fields
+        for (Stmt s : program) {
+            if (s instanceof Stmt.VarDecl v) {
+                sb.append("  private static Object ").append(v.name()).append(" = ").append(generateExpr(v.init())).append(";\n");
+            }
+        }
+
         // functions
         for (Stmt s : program) {
             if (s instanceof Stmt.Function f) {
@@ -128,7 +135,9 @@ public class Codegen {
         sb.append("  public static void main(String[] args) {\n");
         // top-level statements
         for (Stmt s : program) {
-            if (!(s instanceof Stmt.Function)) sb.append(generateStmt(s, 2));
+            if (s instanceof Stmt.Function) continue; // functions already emitted
+            if (s instanceof Stmt.VarDecl) continue; // top-level vars are class fields
+            sb.append(generateStmt(s, 2));
         }
         sb.append("  }\n");
 

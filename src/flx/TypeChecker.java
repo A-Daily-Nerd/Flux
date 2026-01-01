@@ -116,13 +116,65 @@ public class TypeChecker {
     private void collectReturns(Stmt s, Set<String> returns) {
         switch (s) {
             case Stmt.Return r -> {
-                returns.add(typeOf(r.value()));
+                returns.add(typeOfInference(r.value()));
             }
             case Stmt.Block b -> b.stmts().forEach(st -> collectReturns(st, returns));
             case Stmt.If i -> { collectReturns(i.thenBranch(), returns); if (i.elseBranch() != null) collectReturns(i.elseBranch(), returns); }
             case Stmt.While w -> collectReturns(w.body(), returns);
             default -> {}
         }
+    }
+
+    // A relaxed typeOf used during return inference: undefined variables are treated as "any"
+    private String typeOfInference(Expr e) {
+        if (e == null) return "any";
+        if (e instanceof Expr.Literal l) {
+            Object v = l.value();
+            if (v instanceof Integer) return "int";
+            if (v instanceof Double) return "double";
+            if (v instanceof String) return "str";
+            if (v instanceof Boolean) return "bool";
+            return "any";
+        }
+        if (e instanceof Expr.Variable v) {
+            String t = lookup(v.name());
+            if (t == null) return "any"; // relaxed for inference
+            return t;
+        }
+        if (e instanceof Expr.Unary u) {
+            String rt = typeOfInference(u.right());
+            if (u.op().type() == TokenType.MINUS) {
+                if ("int".equals(rt) || "double".equals(rt)) return rt;
+                return "any";
+            }
+            return "any";
+        }
+        if (e instanceof Expr.Binary b) {
+            String lt = typeOfInference(b.left());
+            String rt = typeOfInference(b.right());
+            TokenType op = b.op().type();
+            if (op == TokenType.PLUS) {
+                if ("str".equals(lt) || "str".equals(rt)) return "str";
+                if (isNumeric(lt) && isNumeric(rt)) return promote(lt, rt);
+                return "any";
+            }
+            if (op == TokenType.MINUS || op == TokenType.STAR || op == TokenType.SLASH) {
+                if (isNumeric(lt) && isNumeric(rt)) return promote(lt, rt);
+                return "any";
+            }
+            if (op == TokenType.GREATER || op == TokenType.LESS || op == TokenType.EQUAL_EQUAL) return "bool";
+            return "any";
+        }
+        if (e instanceof Expr.Call c) {
+            if (!(c.callee() instanceof Expr.Variable callee)) return "any";
+            FunctionSig sig = functions.get(callee.name());
+            if (sig == null) return "any";
+            return sig.returnType == null ? "any" : sig.returnType;
+        }
+        if (e instanceof Expr.Index idx) return "str";
+        if (e instanceof Expr.Slice sl) return "str";
+        if (e instanceof Expr.Cast cst) return normalize(cst.typeName());
+        return "any";
     }
 
     private String typeOf(Expr e) {
